@@ -1,85 +1,33 @@
-#name: CI - Build Student Application
-
-#on:
- # push:
-  #  branches:
-   #   - main
-
-#jobsname: CI/CD - Student Application
-
-# Déclenche le workflow à chaque push ou PR sur main
-#on:
- # push:
-  #  branches:
-   #   - main
-  #pull_request:
-   # branches:
-    #  - main
-
-#jobs:
- # build-and-deploy:
-  #  runs-on: ubuntu-latest
-
-   # steps:
-      # Étape 1 : récupérer le code depuis GitHub
-    #  - name: Checkout source code
-     #   uses: actions/checkout@v3
-
-      # Étape 2 : construire l'image Docker pour vérifier que ça build
-    #  - name: Build Docker image
-    #    run: |
-     #     docker build -t student-app .
-
-      # Étape 3 : déploiement automatique sur EC2
-   #   - name: Deploy to EC2
-  #      uses: appleboy/ssh-action@v0.1.6
-        #with:
-       #   host: ${{ secrets.EC2_HOST }}        # IP publique EC2
-      #    username: ubuntu                     # utilisateur EC2
-     #     key: ${{ secrets.EC2_SSH_KEY }}     # clé privée SSH ajoutée dans GitHub Secrets
-    #      script: |
-   #         cd ~/ProjetDEVOPS                  # répertoire de l'application sur EC2
-  #          git pull origin main               # récupérer dernières modifications
- #           docker-compose up -d               # relancer les conteneurs Docker
-#:
- # build:
- #   runs-on: ubuntu-latest
-
-   # steps:
 name: CI/CD - Student Application
 
-# Déclenche le workflow à chaque push ou PR sur main
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+      - feature/test-workflow
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Étape 1 : récupérer le code depuis GitHub
-      - name: Checkout source code
+      # 1️ Récupérer le code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # Étape 2 : construire l'image Docker pour vérifier que ça build
-      - name: Build Docker image locally (optionnel pour tests)
-        run: |
-          docker build -t student-app .
+      # 2️ Installer Docker (utile si runner n'a pas Docker)
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
 
-      # Étape 3 : déploiement automatique sur EC2
+      # 3️ Déployer sur EC2 via SSH
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.6
+        uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}        # IP publique EC2
-          username: ubuntu                     # utilisateur EC2
-          key: ${{ secrets.EC2_SSH_KEY }}     # clé privée SSH
+          host: ${{ secrets.NEW_EC2_PUBLIC_IP }}      # adresse de ta nouvelle EC2
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}             # clé privée SSH stockée dans Secrets
+          port: 22
           script: |
-            cd ~/ProjetDEVOPS                   # répertoire du projet sur EC2
-            git pull origin main                # récupérer le dernier code
-            docker-compose up -d --build       # reconstruire et relancer les conteneurs
-
+            cd ~/ProjetDEVOPS                       # répertoire du projet sur EC2
+            git pull origin feature/test-workflow   # récupérer le dernier code de la branche
+            docker-compose up -d --build            # reconstruire et relancer les conteneurs
