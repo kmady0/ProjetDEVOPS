@@ -1,13 +1,20 @@
-
+# Utiliser Node 18
 FROM node:18
 
+# Créer le répertoire de travail
 WORKDIR /app
 
-# Copier le code du repo (donc modifiable par les devs)
-COPY resources/codebase_partner/ .
+# Copier package.json et package-lock.json d'abord pour le cache Docker
+COPY resources/codebase_partner/package*.json ./
 
-RUN npm install
+# Installer toutes les dépendances, y compris aws-sdk
+RUN npm install --legacy-peer-deps
 
-EXPOSE 80
+# Copier le reste du code
+COPY resources/codebase_partner/ ./
 
-CMD ["npm", "start"]
+# Exposer le port
+EXPOSE 3000
+
+# Commande pour démarrer l'app
+CMD ["node", "index.js"]
