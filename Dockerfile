@@ -1,20 +1,20 @@
-# Utiliser Node 18
+# Utiliser l'image officielle Node.js LTS
 FROM node:18
 
-# Créer le répertoire de travail
+# Créer et positionner le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copier package.json et package-lock.json d'abord pour le cache Docker
+# Copier les fichiers package.json et package-lock.json pour installer les dépendances
 COPY resources/codebase_partner/package*.json ./
 
-# Installer toutes les dépendances, y compris aws-sdk
+# Installer toutes les dépendances, incluant aws-sdk
 RUN npm install --legacy-peer-deps
 
-# Copier le reste du code
+# Copier le reste du code source dans le conteneur
 COPY resources/codebase_partner/ ./
 
-# Exposer le port
+# Exposer le port sur lequel l'application tourne
 EXPOSE 3000
 
-# Commande pour démarrer l'app
+# Définir la commande de démarrage
 CMD ["node", "index.js"]
