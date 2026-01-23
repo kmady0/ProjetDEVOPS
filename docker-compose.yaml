@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Service Base de données
   db:
-    image: mysql:5.7  # On utilise la 5.7 pour être stable avec le vieux code du TP
+    image: mysql:5.7
     container_name: students-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -20,27 +20,24 @@ services:
 
   # Service Application Web
   web:
-    build: .  # Construit l'image à partir du Dockerfile dans ce dossier
+    build: .  # Construit l'image depuis le Dockerfile à la racine
     container_name: students-app
-    restart: always # Si l'app plante (car la DB n'est pas prête), elle redémarre
+    restart: always
     ports:
-      - "8088:80"   # Port 80 de ta machine -> Port 80 du conteneur
+      - "8088:3000"   # Port 3000 du conteneur -> 8088 sur EC2
     environment:
-      # C'est ici qu'on injecte les variables du script original
-      - APP_DB_HOST=db       # "db" est le nom du service ci-dessus (DNS magique Docker)
+      - APP_DB_HOST=db
       - APP_DB_USER=nodeapp
       - APP_DB_PASSWORD=student12
       - APP_DB_NAME=STUDENTS
-      - APP_PORT=80
+      - APP_PORT=3000
     depends_on:
-      - db  # Attend que le service DB soit lancé
+      - db
     networks:
       - app-network
 
-# Création d'un réseau privé pour qu'ils communiquent entre eux
-networks:
-  app-network:
-
-# Création du volume de stockage
 volumes:
   db_data:
+
+networks:
+  app-network:
